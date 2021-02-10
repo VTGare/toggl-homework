@@ -24,8 +24,7 @@ type JoinedQuestion struct {
 
 func GetQuestions() ([]*JoinedQuestion, error) {
 	query := `
-	SELECT
-		questions.id, questions.body, options.body, correct, questions.created_at, questions.updated_at
+	SELECT questions.id, questions.body, options.body, correct, questions.created_at, questions.updated_at
 	FROM questions 
 	INNER JOIN options ON options.question_id = questions.id
 	ORDER BY options.created_at ASC
@@ -52,27 +51,15 @@ func GetQuestions() ([]*JoinedQuestion, error) {
 	return questions, nil
 }
 
-func InsertQuestion(quest *Question) (*Question, error) {
+func InsertQuestion(quest *Question) (int64, error) {
 	query := "INSERT INTO questions (body) VALUES ($1)"
 
 	res, err := database.DBConn.Exec(query, quest.Body)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	id, err := res.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	quest = &Question{
-		ID:        id,
-		Body:      quest.Body,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-
-	return quest, nil
+	return res.LastInsertId()
 }
 
 func DeleteQuestion(id int64) (int64, error) {
@@ -83,9 +70,7 @@ func DeleteQuestion(id int64) (int64, error) {
 		return 0, err
 	}
 
-	affected, _ := res.RowsAffected()
-
-	return affected, nil
+	return res.RowsAffected()
 }
 
 func EditQuestion(quest *Question) (int64, error) {
@@ -96,6 +81,5 @@ func EditQuestion(quest *Question) (int64, error) {
 		return 0, err
 	}
 
-	affected, _ := res.RowsAffected()
-	return affected, nil
+	return res.RowsAffected()
 }

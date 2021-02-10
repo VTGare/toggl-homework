@@ -20,11 +20,8 @@ var (
 
 //InitDatabase initialises a SQLite3  database.
 func InitDatabase() error {
-	var (
-		exists = fileExists(DBNAME)
-	)
-
-	if !exists {
+	//If database file doesn't exist, create it.
+	if !fileExists(DBNAME) {
 		file, err := os.Create(DBNAME)
 		if err != nil {
 			return err
@@ -48,8 +45,14 @@ func InitDatabase() error {
 }
 
 func prepare(db *sql.DB) error {
+	/*
+		Prepares SQLite database.
+		First query enables ON DELETE constrains.
+		Rest create models and unique indexes.
+	*/
+
 	queries := []string{
-		`"PRAGMA foreign_keys=ON"
+		`PRAGMA foreign_keys=ON
 	`, `
 	CREATE TABLE IF NOT EXISTS questions (
 		id INTEGER PRIMARY KEY,
